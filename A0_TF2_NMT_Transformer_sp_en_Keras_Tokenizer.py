@@ -5,9 +5,6 @@ Data Engineering
 '''
 D1. Import Libraries for Data Engineering
 '''
-
-import matplotlib.ticker as ticker
-from sklearn.model_selection import train_test_split
 import os
 import re
 import time
@@ -18,6 +15,7 @@ import unicodedata
 
 print("Tensorflow version {}".format(tf.__version__))
 import random
+# Setup seeds
 SEED = 1234
 tf.random.set_seed(SEED)
 AUTO = tf.data.experimental.AUTOTUNE
@@ -432,7 +430,7 @@ def ScaledDotProductAttention(query, key, value, mask):
         output, attention_weights
     """
     
-    # 1. MatMul Q, K-transpose
+    # 1. MatMul Q, K-transpose. Attention score matrix.
     matmul_qk = tf.matmul(query, key, transpose_b=True)  # (..., seq_len_q, seq_len_k)
 
     # 2. scale matmul_qk
