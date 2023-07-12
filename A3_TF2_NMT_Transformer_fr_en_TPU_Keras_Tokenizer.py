@@ -15,6 +15,7 @@ import unicodedata
 
 print("Tensorflow version {}".format(tf.__version__))
 import random
+# Setup seeds
 SEED = 1234
 tf.random.set_seed(SEED)
 AUTO = tf.data.experimental.AUTOTUNE
@@ -473,7 +474,7 @@ def ScaledDotProductAttention(query, key, value, mask):
         output, attention_weights
     """
     
-    # 1. MatMul Q, K-transpose
+    # 1. MatMul Q, K-transpose. Attention score matrix.
     matmul_qk = tf.matmul(query, key, transpose_b=True)  # (..., seq_len_q, seq_len_k)
 
     # 2. scale matmul_qk
@@ -643,7 +644,7 @@ def encoder(n_enc_vocab, n_layers, pf_dim, hid_dim, n_heads, dropout,
         outputs = encoder_layer(pf_dim=pf_dim, hid_dim=hid_dim, n_heads=n_heads,
             dropout=dropout, name="encoder_layer_{}".format(i),
         )([outputs, padding_mask])
-
+    # 5. Final layer's output is the encoder output
     return tf.keras.Model(
         inputs=[inputs, padding_mask], outputs=outputs, name=name)
 
@@ -797,8 +798,8 @@ def Transformer(n_enc_vocab, n_dec_vocab, n_layers, pf_dim, hid_dim, n_heads, dr
 
     # 6. Output layer for next word prediction
     outputs = tf.keras.layers.Dense(units=n_dec_vocab, name="outputs")(dec_outputs)
+    
     # 7. Final outputs are created. Then it is used or Language Model. In the official tutorial "Softmax" was missed
-
     return tf.keras.Model(inputs=[inputs, dec_inputs], outputs=outputs, name=name)
 
 '''
@@ -862,9 +863,15 @@ def accuracy(y_true, y_pred):
     y_true = tf.reshape(y_true, shape=(-1, DECODER_LEN - 1))
     return tf.keras.metrics.sparse_categorical_accuracy(y_true, y_pred)
     # return tf.keras.metrics.SparseCategoricalCrossentropy(y_true, y_pred)
-
+    
+'''
+M09. strategy.scope()
+'''
 # initialize and compile model within strategy scope
 with strategy.scope():
+    '''
+    M10. Model Define
+    '''
     model = Transformer(
         n_enc_vocab = n_enc_vocab,
         n_dec_vocab = n_dec_vocab,
@@ -874,6 +881,9 @@ with strategy.scope():
         n_heads     = n_heads,
         dropout     = dropout)
 
+    '''
+    M11. Model Compilation
+    '''
     model.compile(optimizer=optimizer, loss=loss_function, metrics=[accuracy])
 
 model.summary()
@@ -881,6 +891,9 @@ model.summary()
 tf.keras.utils.plot_model(
     model, to_file='transformer.png', show_shapes=True)
 
+'''
+M12. Load from Checkpoints
+'''
 checkpoint_path = "./checkpoints/Transformer.h5"
 if os.path.exists(checkpoint_path):
     model.load_weights(checkpoint_path)
@@ -889,7 +902,9 @@ if os.path.exists(checkpoint_path):
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau, CSVLogger
 # tf.keras.callbacks.EarlyStopping( monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto', baseline=None, restore_best_weights=False)
 
-# Callback function loss
+'''
+M13. Callback function loss
+'''
 es = EarlyStopping(monitor='loss', min_delta=0.0001, patience = 20)
 
 # mc = ModelCheckpoint(checkpoint_path, save_best_only=True)
@@ -898,17 +913,22 @@ es = EarlyStopping(monitor='loss', min_delta=0.0001, patience = 20)
 # Just put the above callback function in fit.
 # model.fit(x_train, y_train, epochs=20, batch_size=128, callbacks=[es, mc, rlr, csvlogger])
 
+'''
+M14.  Train and Validation - model.fit
+'''
 model.fit(dataset, epochs=N_EPOCHS, callbacks=[es])
 # model.fit(dataset, epochs=N_EPOCHS)
 
 
-import os
+'''
+M15.  Save at Checkpoints
+'''
 if not os.path.exists("checkpoints"):
     os.makedirs("checkpoints")
 model.save_weights(checkpoint_path)
 
 '''
-M12. Explore the training result with new raw sentence
+M16. Explore the training result with new raw sentence
 '''
 
 def evaluate(text):
