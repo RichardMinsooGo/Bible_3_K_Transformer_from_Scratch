@@ -5,9 +5,6 @@ Data Engineering
 '''
 D1. Import Libraries for Data Engineering
 '''
-
-import matplotlib.ticker as ticker
-from sklearn.model_selection import train_test_split
 import os
 import re
 import time
@@ -20,6 +17,7 @@ import tensorflow_datasets as tfds
 
 print("Tensorflow version {}".format(tf.__version__))
 import random
+# Setup seeds
 SEED = 1234
 tf.random.set_seed(SEED)
 AUTO = tf.data.experimental.AUTOTUNE
@@ -422,7 +420,7 @@ def ScaledDotProductAttention(query, key, value, mask):
         output, attention_weights
     """
     
-    # 1. MatMul Q, K-transpose
+    # 1. MatMul Q, K-transpose. Attention score matrix.
     matmul_qk = tf.matmul(query, key, transpose_b=True)  # (..., seq_len_q, seq_len_k)
 
     # 2. scale matmul_qk
@@ -473,7 +471,7 @@ class MultiHeadAttentionLayer(tf.keras.layers.Layer):
 
     def call(self, value, key, query, mask):
         batch_size = tf.shape(query)[0]
-
+        
         # 1. Pass through the dense layer corresponding to WQ
         # q : (batch_size, sentence length of query, hid_dim)
         query = self.q_linear(query)
@@ -575,10 +573,10 @@ class Encoder(tf.keras.layers.Layer):
     def __init__(self, n_enc_vocab, n_layers, pf_dim, hid_dim, n_heads,
                  maximum_position_encoding, dropout):
         super(Encoder, self).__init__()
-
+        
         self.hid_dim  = hid_dim
         self.n_layers = n_layers
-
+        
         self.embedding = tf.keras.layers.Embedding(n_enc_vocab, hid_dim)
         self.pos_encoding = get_sinusoid_encoding_table(maximum_position_encoding,
                                                 self.hid_dim)
@@ -626,7 +624,7 @@ class DecoderLayer(tf.keras.layers.Layer):
         self.layernorm1 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
         self.layernorm2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
         self.layernorm3 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
-
+        
         self.dropout1 = tf.keras.layers.Dropout(dropout)
         self.dropout2 = tf.keras.layers.Dropout(dropout)
         self.dropout3 = tf.keras.layers.Dropout(dropout)
@@ -741,7 +739,7 @@ def create_masks(inp, tar):
 C12. Transformer Class
 """
 class Transformer(tf.keras.Model):
-
+    
     def __init__(self, n_enc_vocab, n_dec_vocab,
                  n_layers, pf_dim, hid_dim, n_heads,
                  pe_input, pe_target, dropout):
