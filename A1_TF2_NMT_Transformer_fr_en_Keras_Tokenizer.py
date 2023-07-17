@@ -191,8 +191,8 @@ train_df = pd.concat([SRC_df, TRG_df], axis=1)
 print('Translation Pair :',len(train_df)) # 리뷰 개수 출력
 train_df.sample(10)
 
-raw_src_df  = train_df['TRG']
-raw_trg_df  = train_df['SRC']
+raw_src_df  = train_df['SRC']
+raw_trg_df  = train_df['TRG']
 
 src_sentence  = raw_src_df.apply(lambda x: "<SOS> " + str(x) + " <EOS>")
 trg_sentence  = raw_trg_df.apply(lambda x: "<SOS> "+ x + " <EOS>")
@@ -203,7 +203,6 @@ D10. Define tokenizer
 filters = '!"#$%&()*+,-./:;=?@[\\]^_`{|}~\t\n'
 oov_token = '<unk>'
 
-# Define tokenizer
 SRC_tokenizer = tf.keras.preprocessing.text.Tokenizer(filters = filters, oov_token=oov_token)
 TRG_tokenizer = tf.keras.preprocessing.text.Tokenizer(filters = filters, oov_token=oov_token)
 
@@ -292,7 +291,6 @@ D14. Pad sequences
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 tkn_sources = pad_sequences(tokenized_inputs,  maxlen=ENCODER_LEN, padding='post', truncating='post')
 tkn_targets = pad_sequences(tokenized_outputs, maxlen=DECODER_LEN, padding='post', truncating='post')
-
 
 '''
 D15. Data type define
