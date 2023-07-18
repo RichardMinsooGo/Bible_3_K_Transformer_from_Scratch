@@ -263,18 +263,21 @@ lines = [
   "Be careful not to catch a cold in winter and have a happy new year."
 ]
 for line in lines:
+    print("Input        :", line)
     txt_2_tkn = vocab_src.encode_as_pieces(line)
+    print("txt --> tkn  :", txt_2_tkn)
+    tkn_2_txt = vocab_src.DecodePieces(txt_2_tkn)
+    print("tkn --> txt  :", tkn_2_txt)
+
     txt_2_ids = vocab_src.encode_as_ids(line)
-    print(vocab_src.DecodeIds(txt_2_ids))
-    print(vocab_src.DecodePieces(txt_2_tkn))
+    print("txt --> ids  :", txt_2_ids)
+    ids_2_txt = vocab_src.DecodeIds(txt_2_ids)
+    print("ids --> txt  :", ids_2_txt)
 
     ids2 = vocab_src.piece_to_id(txt_2_tkn)
-    print(ids2)
-    print(vocab_src.id_to_piece(ids2))
-    print()
-    print("Input     :", line)
-    print("txt_2_tkn :", txt_2_tkn)
-    print("txt_2_ids :", txt_2_ids)
+    print("Piece --> id :", ids2)
+    print("Id --> piece :", vocab_src.id_to_piece(ids2))
+    print("\n")
 
 # Target Tokenizer
 lines = [
@@ -283,19 +286,21 @@ lines = [
   "Attention à ne pas attraper froid en hiver et bonne année."
 ]
 for line in lines:
+    print("Input        :", line)
     txt_2_tkn = vocab_trg.encode_as_pieces(line)
+    print("txt --> tkn  :", txt_2_tkn)
+    tkn_2_txt = vocab_trg.DecodePieces(txt_2_tkn)
+    print("tkn --> txt  :", tkn_2_txt)
+
     txt_2_ids = vocab_trg.encode_as_ids(line)
-    print(vocab_trg.DecodeIds(txt_2_ids))
-    print(vocab_trg.DecodePieces(txt_2_tkn))
-    
+    print("txt --> ids  :", txt_2_ids)
+    ids_2_txt = vocab_trg.DecodeIds(txt_2_ids)
+    print("ids --> txt  :", ids_2_txt)
+
     ids2 = vocab_trg.piece_to_id(txt_2_tkn)
-    print(ids2)
-    print(vocab_trg.id_to_piece(ids2))
-    print()
-    
-    print("Input     :", line)
-    print("txt_2_tkn :", txt_2_tkn)
-    print("txt_2_ids :", txt_2_ids)
+    print("Piece --> id :", ids2)
+    print("Id --> piece :", vocab_trg.id_to_piece(ids2))
+    print("\n")
 
 
 train_df, test_df = train_test_split(total_df, test_size=0.2)
@@ -799,10 +804,10 @@ def train_epoch(epoch, model, criterion, optimizer, train_loader):
             outputs = model(enc_inputs, dec_inputs[:,:-1])
             logits_lm = outputs[0]
             output_dim = logits_lm.shape[-1]
-
+            
             logits_lm = logits_lm.contiguous().view(-1, output_dim)
             dec_inputs = dec_inputs[:,1:].contiguous().view(-1)
-
+            
             loss_lm = criterion(logits_lm, dec_inputs)
             loss_val = loss_lm.item()
             losses.append(loss_val)
