@@ -1,3 +1,7 @@
+!pip install tensorflow==2.15.0
+import tensorflow as tf
+print(tf.__version__)
+
 '''
 Data Engineering
 '''
